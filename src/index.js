@@ -1,5 +1,5 @@
 import './css/styles.css';
-import fetchCountries from './fetchCountries.js';
+import { fetchCountries }  from './fetchCountries';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
 
@@ -10,18 +10,18 @@ const inputEl = document.querySelector("#search-box");
 const listEl = document.querySelector(".country-list");
 const infoEl = document.querySelector(".country-info");
 
-inputEl.addEventListener("inputEl", debounce(onFetchCountry, DEBOUNCE_DELAY));
+inputEl.addEventListener('input', debounce(findCountry, DEBOUNCE_DELAY));
 
-function onFetchCountry(e) {
+function findCountry(e) {
     e.preventDefault();
-    const searchQuery = e.target.value.trim();
+    const inputValue = e.target.value.trim();
     
-    if(searchQuery.length === 0){
+    if(inputValue.length === 0){
       Notiflix.Notify.info('Please, start entering country name');
       return;
     }
 
-    fetchCountries(searchQuery)
+    fetchCountries(inputValue)
     .then(renderCountry)
     .catch(error => {
         Notiflix.Notify.failure("Oops, there is no country with that name");
@@ -32,17 +32,20 @@ function onFetchCountry(e) {
 }
 
 function renderCountry(country) {
-    const markup = country.map(({name:{official}, flags:{svg}}) => {
-        return `<li><img src="${svg} alt="Flag of ${official}" />
+    listEl.innerHTML = country
+    .map(
+      ({name:{official}, flags:{svg}}) => 
+        `
+        <li class="country"><img src="${svg}"alt="Flag of ${official}" />
         <h1>${official}</h1>
-        </li>`
-    }).join("");
-    listEl.innerHTML = markup;
+        </li>
+        `
+    ).join("");
 
     if (country.length === 1) {
         infoEl.innerHTML = country
           .map(
-            ({capital,population, languages}) =>
+            ({capital, population, languages}) =>
               `
               <p><b>Capital: </b>${capital}</p>
               <p><b>Population: </b>${population}</p>
