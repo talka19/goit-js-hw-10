@@ -1,0 +1,43 @@
+import './css/styles.css';
+import API  from "./fetchCountries.js";
+import debounce from 'lodash.debounce';
+import Notiflix from 'notiflix';
+
+const DEBOUNCE_DELAY = 300;
+
+const refs = {
+    searchBox: document.querySelector("#search-box"),
+    countryList: document.querySelector(".country-list"),
+    countryInfo: document.querySelector(".country-info"),
+}
+
+refs.searchBox.addEventListener("input", debounce(onSearch, DEBOUNCE_DELAY));
+
+function onSearch(e) {
+    e.preventDefault();
+    const searchQuery = e.currentTarget.elements.search-box.value.trim();
+
+    API.fetchCountries(searchQuery )
+    .then(render)
+    .catch(onFetchError)
+    .finally(() => searchQuery.reset());
+    
+};
+
+function render(country) {
+    const markup =  country.map(({name, capital, population, flags, languages}) => {
+        return `
+        <li>
+        <h2>Name: ${name.official}</h2>
+        <p>Capital: ${capital}</p>
+        <p>Population: ${population}</p>
+        <img src="Flags: ${flags.svg}"></img>
+        <p>Languages: ${languages}</p>
+        </li>`
+    }).join("");
+    refs.countryList.innerHTML = markup;
+}
+
+function onFetchError(error){
+    console.error(error => Notiflix.Notify.failure('Oops, there is no country with that name'));
+}
